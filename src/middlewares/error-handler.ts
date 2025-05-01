@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-
-export interface ApiError extends Error {
-  statusCode?: number;
-  details?: string;
-  debug?: any;
-}
+import { ApiError } from '../types/api-error.types';
 
 export const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunction) => {
   // Si les en-têtes ont déjà été envoyés, passer au middleware suivant
