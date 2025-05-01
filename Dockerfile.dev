@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:23-slim
 
 RUN apt-get update && \
     apt-get install -y \
@@ -6,6 +6,12 @@ RUN apt-get update && \
     texlive-latex-extra \
     texlive-fonts-recommended && \
     apt-get clean
+
+# RUN apk update && apk add --no-cache \
+#     texlive \
+#     texmf-dist-latex \
+#     texmf-dist-fontsrecommended \
+#     texmf-dist-latexextra
 
 WORKDIR /app
 
