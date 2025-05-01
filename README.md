@@ -18,6 +18,12 @@ npm install
 │   └── controllers
 │       └── generate.ts
 │       └── informations.ts
+│   └── middlewares
+│       └── cleanup-complier.ts
+│       └── error-handler.ts
+│       └── latex-compiler.ts
+│       └── latex-validator.ts
+│       └── upload.ts
 │   └── routes
 │       └── generate.ts
 │       └── informations.ts
