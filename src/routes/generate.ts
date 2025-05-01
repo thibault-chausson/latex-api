@@ -1,9 +1,19 @@
 import { Router } from "express";
 import { postGenerate } from "../controllers/generate";
+import { setupUploadMiddleware } from "../middlewares/upload";
+import { compileLatex } from "../middlewares/latex-compiler";
+import { cleanupMiddleware } from "../middlewares/cleanup-compiler";
+import { validateLatexContent } from "../middlewares/latex-validator";
 
 const router: Router = Router();
 
-router.post("/", postGenerate);
-
+// Route pour la génération de PDF à partir de code LaTeX
+router.post("/", 
+  setupUploadMiddleware(),          // Gestion des uploads de fichiers
+  cleanupMiddleware(),              // S'assurer du nettoyage à la fin
+  validateLatexContent,             // Validation du contenu LaTeX
+  compileLatex,                     // Compilation LaTeX -> PDF
+  postGenerate                      // Envoi du PDF au client
+);
 
 export default router;
