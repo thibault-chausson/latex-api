@@ -29,3 +29,9 @@ npm install
 ├── README.md                       # Documentation du projet
 ├── tsconfig.json                   # Configuration TypeScript
 ```
+
+## Sign commit
+
+```sh
+git commit -S -m "<message>"
+```
