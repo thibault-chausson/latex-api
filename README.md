@@ -1,54 +1,126 @@
-# Documentation 
+# Documentation
 
-## Intallation 
+## Installation
+
+Install the project dependencies:
 
 ```bash
 npm install
 ```
 
-## Organisation des fichiers et dossiers
+## File Organization
 
-```yaml
+```yml
 .
-├── dist/                           # Dossier de build
-├── node_modules/                   # Modules Node.js
-├── src/                            # Dossier source
-│   └── config
-│       └── const.ts
-│   └── controllers
-│       └── generate.ts
-│       └── informations.ts
-│   └── middlewares
-│       └── cleanup-complier.ts
-│       └── error-handler.ts
-│       └── latex-compiler.ts
-│       └── latex-validator.ts
-│       └── upload.ts
-│   └── routes
-│       └── generate.ts
-│       └── informations.ts
-│   └── utils
-│       └── security.ts
-│   └── server.ts                    # Point d'entrée de l'application
-│   └── app.ts
-├── .env
-├── .env.template
-├── .gitignore                      # Fichiers à ignorer par Git
-├── docker-compose.dev.yml          # Configuration Docker pour le développement
-├── docker-compose.prod.yml         # Configuration Docker pour la production
-├── docker-compose.yml              # Configuration Docker de base (peut être utilisée pour les deux environnements)
-├── Dockerfile                      # Dockerfile pour la production
-├── Dockerfile.dev                  # Dockerfile pour le développement
-├── LICENSE                         # Licence du projet
-├── Makefile                        # Fichier Makefile pour des commandes pratiques
-├── package-lock.json               # Dépendances exactes du projet
-├── package.json                    # Fichier des dépendances et des scripts
-├── README.md                       # Documentation du projet
-├── tsconfig.json                   # Configuration TypeScript
+├── dist/                           # Compiled files (final build)
+├── node_modules/                   # Dependencies installed by npm
+├── src/                            # Source code of the application
+│   ├── config/                     # Static project configuration
+│   │   └── const.ts                # Global constants used throughout the project
+│   ├── controllers/               # Business logic associated with routes
+│   │   ├── generate.ts             # Controller for document generation
+│   │   └── informations.ts         # Controller for informational routes (disallowed commands, allowed extensions, etc.)
+│   ├── middlewares/              # Custom Express middlewares
+│   │   ├── cleanup-complier.ts     # Deletes temporary files after compilation
+│   │   ├── error-handler.ts        # Centralized error handling
+│   │   ├── latex-compiler.ts       # Compiles LaTeX documents into PDF
+│   │   ├── latex-validator.ts      # Validates the received LaTeX code
+│   │   └── upload.ts               # Handles file uploads (images, .tex files, etc.)
+│   ├── routes/                   # Definition of API routes
+│   │   ├── generate.ts             # POST route /generate for PDF generation
+│   │   └── informations.ts         # GET route /informations/... for system info
+│   ├── utils/                    # Reusable utility functions
+│   │   └── security.ts             # Security checks (e.g., LaTeX command blacklist)
+│   ├── app.ts                      # Configuration and initialization of the Express app
+│   └── server.ts                   # Main entry point of the application (port listener)
+├── .env                            # Environment variables file (not versioned)
+├── .env.template                   # Example .env file to complete
+├── .gitignore                      # Files/directories to ignore by Git
+├── docker-compose.dev.yml         # Docker configuration for the development environment
+├── docker-compose.prod.yml        # Docker configuration for production
+├── docker-compose.yml             # Main Docker Compose file (may include or replace others)
+├── Dockerfile                     # Dockerfile for building a production image
+├── Dockerfile.dev                 # Dockerfile dedicated to the development environment
+├── LICENSE                         # Project license (e.g., MIT, Apache 2.0)
+├── Makefile                        # Automated commands (build, dev, test, etc.)
+├── package-lock.json               # Lock file for npm dependency versions
+├── package.json                    # List of dependencies, npm scripts, and project metadata
+├── README.md                       # Main project documentation
+├── tsconfig.json                   # TypeScript compiler configuration
 ```
 
-## Sign commit
+## Development
 
-```sh
+Ensure Docker is installed.
+
+To start the development environment on Linux:
+
+```bash
+make dev
+```
+
+## Deployment
+
+To deploy in production:
+
+```bash
+make prod
+```
+
+## Usage
+
+### Generating a LaTeX document
+
+```bash
+curl -X POST http://<your-ip>:3000/generate \
+     -F "tex=@<your-latex-code.txt>" \
+     -F "images=@<image-test1.png>" \
+     -F "images=@<image-test2.png>"
+```
+
+Example of the `your-latex-code.txt` file:
+
+```tex
+\documentclass{article}
+\usepackage{graphicx}
+\begin{document}
+    \title{Test PDF Generation with Image}
+    \author{Your Name}
+    \date{\today}
+    \maketitle
+    \section{Introduction}
+    This is a test with an image.
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\textwidth]{image-test1.png}
+        \caption{Here is an image}
+        \includegraphics[width=0.5\textwidth]{image-test2.png}
+        \caption{Here is another image}
+    \end{figure}
+\end{document}
+```
+
+### Retrieving disallowed commands
+
+```bash
+curl -X GET http://<your-ip>:3000/informations/blacklisted-commands
+```
+
+### Retrieving allowed file extensions
+
+```bash
+curl -X GET http://<your-ip>:3000/informations/allowed-extensions
+```
+
+## Miscellaneous
+
+### Signed commits
+
+```bash
 git commit -S -m "<message>"
 ```
+
+### Remarks
+
+- The current size of the Docker image is about **1.65 GB**.
+- There is consideration to externalize document generation into an **ephemeral container**, to avoid using the API container.
