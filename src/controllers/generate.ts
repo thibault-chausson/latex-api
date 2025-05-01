@@ -1,91 +1,15 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import multer from 'multer';
 import fs from 'fs/promises';
 import { existsSync, readFileSync } from 'fs';
 import { exec } from 'child_process';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-
-const app = express();
-app.use(express.json({ limit: '1mb' })); // Limite la taille des requêtes JSON
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+import { checkForBlacklistedCommands, hasAllowedExtension, sanitizeFilename } from '../utils/security';
 
 
-// Interface pour le type des fichiers
-interface MulterRequest extends Request {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
-}
-
-// Liste noire des commandes LaTeX potentiellement dangereuses
-const BLACKLISTED_COMMANDS = [
-  // Accès au système de fichiers
-  '\\input', '\\include', '\\openin', '\\openout', '\\write18', 
-  '\\read', '\\write', '\\csname', 
-  
-  // Exécution de commandes système
-  '\\immediate', '\\write18', '\\shell', '\\ShellEscape', '\\pgfsysdriver',
-  '\\special', '\\@@input', '\\@@include',
-  
-  // Commandes dangereuses spécifiques
-  '\\catcode', '\\newwrite', '\\newread',
-  
-  // Macros potentiellement dangereuses
-  '\\pdfmark', '\\pdfliteral', '\\pdftexcmds', '\\pdffilesize',
-  '\\starttext', '\\directlua', '\\latelua',
-  
-  // Commandes d'import de packages potentiellement dangereux
-  '\\usepackage{shellesc}', '\\usepackage{pgf}', '\\usepackage{tikz}', 
-  '\\usepackage{epstopdf}', '\\usepackage{minted}'
-];
-
-// Extensions de fichiers autorisées (formats d'images sûrs)
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-
-// Fonction de nettoyage des noms de fichiers pour éviter les attaques de traversée de répertoire
-function sanitizeFilename(filename: string): string {
-  // Supprime les caractères spéciaux et les chemins
-  const sanitized = path.basename(filename)
-    .replace(/[^\w\s.-]/g, '_') // Remplace les caractères non alphanumériques par des underscores
-    .replace(/\.{2,}/g, '.'); // Empêche les séquences de points multiples (comme '..')
-  
-  // Vérifie que le fichier a toujours une extension après le nettoyage
-  const parts = sanitized.split('.');
-  if (parts.length < 2) {
-    return sanitized + '.txt'; // Ajoute une extension par défaut si nécessaire
-  }
-  
-  return sanitized;
-}
-
-// Fonction pour vérifier l'extension d'un fichier
-function hasAllowedExtension(filename: string): boolean {
-  const ext = path.extname(filename).toLowerCase().substring(1); // Supprime le point au début
-  return ALLOWED_EXTENSIONS.includes(ext);
-}
-
-// Vérification du contenu LaTeX pour des commandes interdites
-function checkForBlacklistedCommands(texContent: string): { safe: boolean, detectedCommands: string[] } {
-  const detectedCommands: string[] = [];
-  
-  // Recherche des commandes de la liste noire
-  for (const command of BLACKLISTED_COMMANDS) {
-    // Expression régulière pour détecter les commandes
-    // Nous recherchons la commande comme un mot complet ou suivi d'accolades/crochets/espaces
-    const regex = new RegExp(`${command.replace(/\\/g, '\\\\').replace(/\{/g, '\\{')}\\s*[\\{\\[\\s]|${command.replace(/\\/g, '\\\\').replace(/\{/g, '\\{')}$`, 'gm');
-    
-    if (regex.test(texContent)) {
-      detectedCommands.push(command);
-    }
-  }
-  
-  return {
-    safe: detectedCommands.length === 0,
-    detectedCommands
-  };
-}
-
-app.post('/generate', async (req: Request, res: Response): Promise<void> => {
-  const id = uuidv4();
+export const postGenerate = async (req: Request, res: Response): Promise<void> => {
+      const id = uuidv4();
   const tempDir = path.join('/tmp', `latex-${id}`);
   
   try {
@@ -372,20 +296,4 @@ app.post('/generate', async (req: Request, res: Response): Promise<void> => {
       }
     } catch {}
   }
-});
-
-// Endpoint pour récupérer la liste des commandes interdites (utile pour les frontend)
-app.get('/blacklisted-commands', (req: Request, res: Response) => {
-  res.json({
-    blacklistedCommands: BLACKLISTED_COMMANDS
-  });
-});
-
-// Nouvel endpoint pour récupérer les extensions de fichiers autorisées
-app.get('/allowed-extensions', (req: Request, res: Response) => {
-  res.json({
-    allowedExtensions: ALLOWED_EXTENSIONS
-  });
-});
-
-app.listen(3000, () => console.log('API LaTeX sécurisée en écoute sur le port 3000'));
+}
