@@ -15,23 +15,26 @@ export const compileLatex = async (req: Request, res: Response, next: NextFuncti
   const logFile = path.join(tempDir, 'latex_output.log');
   
   try {
-    // Exécution de pdflatex avec un timeout
-    const latexTimeout = 30000; // 30 secondes max
-    const pdflatexProcess = new Promise<{ success: boolean, stdout: string, stderr: string }>(
+    // Exécution de la compilation LaTeX dans un conteneur Docker dédié
+    const dockerTimeout = 45000; // 45 secondes max (compilation + overhead Docker)
+    console.log(`Lancement du conteneur Docker pour compiler LaTeX dans ${tempDir}`);
+    
+    const dockerProcess = new Promise<{ success: boolean, stdout: string, stderr: string }>(
       (resolve, reject) => {
-        const command = `pdflatex --shell-restricted -interaction=nonstopmode -output-directory=${tempDir} document.tex`;
+        // Commande pour executer le conteneur Docker dédié à LaTeX
+        const command = `docker run --rm -v ${tempDir}:/workdir latex-compiler`;
         console.log(`Exécution de la commande: ${command}`);
         
         const process = exec(
           command, 
-          { cwd: tempDir, timeout: latexTimeout }, 
+          { timeout: dockerTimeout }, 
           (err, stdout, stderr) => {
             // Écriture des logs
             fs.writeFile(logFile, `STDOUT:\n${stdout}\n\nSTDERR:\n${stderr}`)
               .catch(console.error);
             
             if (err) {
-              console.error('Erreur pdflatex:', err.message);
+              console.error('Erreur docker latex-compiler:', err.message);
               resolve({ success: false, stdout, stderr });
             } else {
               resolve({ success: true, stdout, stderr });
@@ -41,7 +44,7 @@ export const compileLatex = async (req: Request, res: Response, next: NextFuncti
       }
     );
     
-    const latexResult = await pdflatexProcess;
+    const dockerResult = await dockerProcess;
     
     // Vérification de l'existence du PDF généré
     const pdfPath = path.join(tempDir, 'document.pdf');
@@ -52,8 +55,8 @@ export const compileLatex = async (req: Request, res: Response, next: NextFuncti
       
       // Collecte des informations de débogage
       let debugInfo: any = {
-        latexOutput: latexResult.stdout,
-        latexError: latexResult.stderr
+        dockerOutput: dockerResult.stdout,
+        dockerError: dockerResult.stderr
       };
       
       // Vérifier le fichier log de LaTeX
@@ -155,6 +158,7 @@ declare global {
   namespace Express {
     interface Request {
       pdfPath?: string;
+      tempDir?: string;
     }
   }
 }

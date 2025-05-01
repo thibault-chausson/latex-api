@@ -1,0 +1,15 @@
+FROM debian
+
+# Installation des dépendances minimales pour LaTeX
+RUN apt-get update && apt-get install -y \
+    texlive-latex-recommended \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Définir le répertoire de travail
+WORKDIR /workdir
+
+# Commande par défaut : compile le document LaTeX
+ENTRYPOINT ["pdflatex", "-interaction=nonstopmode", "document.tex"]

@@ -4,5 +4,12 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Permet à l'API d'exécuter Docker
     environment:
       - NODE_ENV=production
+  
+  # Ajout du service pour construire l'image latex-compiler
+  latex-compiler:
+    extends:
+      file: docker-compose.yml
+      service: latex-compiler

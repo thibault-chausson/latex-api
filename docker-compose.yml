@@ -10,6 +10,18 @@ services:
     networks:
       - latex-network
     restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Permet à l'API d'exécuter Docker
+  
+  # La service latex-compiler n'est pas défini comme service actif
+  # mais juste comme image à construire
+  latex-compiler:
+    image: latex-compiler
+    build:
+      context: .
+      dockerfile: Dockerfile.latex
+    profiles:
+      - build-only  # Ce service ne sera pas démarré par défaut
 
 networks:
   latex-network:

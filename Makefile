@@ -1,23 +1,25 @@
-APP_NAME=latex-api
+.PHONY: build-compiler build-dev start-dev build-prod start-prod clean
 
-dev:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Construire l'image du compilateur LaTeX
+build-compiler:
+	docker compose build latex-compiler
 
-prod:
-	docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+# Construire et démarrer l'environnement de développement
+build-dev: build-compiler
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml build latex-api
 
-stop:git
-	docker compose stop
+start-dev: build-dev
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up latex-api
 
-down:
-	docker compose down
+# Construire et démarrer l'environnement de production
+build-prod: build-compiler
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml build latex-api
 
-logs:
-	docker compose logs -f $(APP_NAME)
+start-prod: build-prod
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d latex-api
 
-rebuild:
-	docker compose down
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-
+# Nettoyage
 clean:
-	docker system prune -af --volumes
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+	docker system prune -f
