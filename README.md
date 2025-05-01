@@ -13,7 +13,18 @@ npm install
 ├── dist/                           # Dossier de build
 ├── node_modules/                   # Modules Node.js
 ├── src/                            # Dossier source
-│   └── index.ts                    # Point d'entrée de l'application
+│   └── config
+│       └── const.ts
+│   └── controllers
+│       └── generate.ts
+│       └── informations.ts
+│   └── routes
+│       └── generate.ts
+│       └── informations.ts
+│   └── utils
+│       └── security.ts
+│   └── server.ts                    # Point d'entrée de l'application
+│   └── app.ts
 ├── .env
 ├── .env.template
 ├── .gitignore                      # Fichiers à ignorer par Git
