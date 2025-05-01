@@ -6,7 +6,7 @@ dev:
 prod:
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
-stop:git
+stop:
 	docker compose stop
 
 down:
