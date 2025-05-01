@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getAllowedExtensions, getBlacklistedCommands } from "../controllers/informations";
+import {
+  getAllowedExtensions,
+  getBlacklistedCommands,
+} from "../controllers/informations";
 
 const router: Router = Router();
 

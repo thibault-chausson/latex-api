@@ -1,0 +1,87 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.7.0/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"extends": [],
+	"json": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "space",
+			"indentWidth": 2,
+			"lineEnding": "lf",
+			"lineWidth": 90
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"enabled": true,
+			"arrowParentheses": "always",
+			"jsxQuoteStyle": "double",
+			"semicolons": "always",
+			"trailingComma": "all",
+			"quoteProperties": "asNeeded",
+			"bracketSpacing": true,
+			"bracketSameLine": false,
+			"attributePosition": "multiline",
+			"indentStyle": "space",
+			"indentWidth": 2,
+			"lineEnding": "lf",
+			"quoteStyle": "double",
+			"lineWidth": 90
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"lineWidth": 90,
+		"indentStyle": "space",
+		"indentWidth": 2,
+		"formatWithErrors": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"include": [
+			"./src",
+			"./**/*.tsx",
+			"./**/*.ts",
+			"./**/*.js",
+			"./**/*.jsx",
+			"./**/*.json",
+			"./**/*.md",
+			"./**/*.mdx",
+			"./**/*.html",
+			"./**/*.css"
+		],
+		"ignore": [
+			"node_modules",
+			"dist",
+			".next",
+			"aceternity-ui"
+		]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "warn"
+			},
+			"correctness": {
+				"useExhaustiveDependencies": "warn"
+			},
+			"a11y": {
+				"useKeyWithClickEvents": "warn"
+			}
+		},
+		"ignore": [
+			"node_modules",
+			"dist",
+			".next",
+			"aceternity-ui",
+			"*.stories.tsx",
+			"*.stories.ts",
+			"stories/*.tsx",
+			"react-beautiful-hooks"
+		]
+	}
+}
