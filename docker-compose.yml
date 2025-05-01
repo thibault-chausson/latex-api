@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  latex-api:
+    container_name: latex-api
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    networks:
+      - latex-network
+    restart: unless-stopped
+
+networks:
+  latex-network:
+    driver: bridge
