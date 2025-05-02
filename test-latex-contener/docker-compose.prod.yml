@@ -1,0 +1,9 @@
+services:
+  latex-api:
+    build:
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=production
+      

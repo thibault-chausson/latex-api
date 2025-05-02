@@ -1,0 +1,10 @@
+services:
+  latex-api:
+    build:
+      dockerfile: Dockerfile.dev
+    command: npm run dev
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
