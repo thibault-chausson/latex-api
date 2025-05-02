@@ -71,6 +71,8 @@ make prod
 
 ### Generating a LaTeX document
 
+Document generation works with or without images.
+
 ```bash
 curl -X POST http://<your-ip>:3000/generate \
      -F "tex=@<your-latex-code.txt>" \
@@ -100,6 +102,14 @@ Example of the `your-latex-code.txt` file:
 \end{document}
 ```
 
+#### Security
+
+Commands that could allow arbitrary code execution are excluded. To retrieve the list, refer to the section: [See disallowed commands](#retrieving-disallowed-commands).
+
+To find the allowed image file extensions, refer to the section: [See allowed extensions](#retrieving-allowed-file-extensions).
+
+To enable API keys, add `API_KEY=<your_key>` to your `.env` file, and include it in the request header when generating a PDF as: `X-API-Key: <your_key>`.
+
 ### Retrieving disallowed commands
 
 ```bash
@@ -122,5 +132,5 @@ git commit -S -m "<message>"
 
 ### Remarks
 
-- The current size of the Docker image is about **1.65 GB**.
+- The current size of the Docker image is about **1.8 GB**.
 - There is consideration to externalize document generation into an **ephemeral container**, to avoid using the API container.
