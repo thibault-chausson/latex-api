@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { postGenerate } from "../controllers/generate";
+import { apiKeyValidator } from "../middlewares/api-key-validator";
 import { cleanupMiddleware } from "../middlewares/cleanup-compiler";
 import { compileLatex } from "../middlewares/latex-compiler";
 import { validateLatexContent } from "../middlewares/latex-validator";
@@ -10,6 +11,7 @@ const router: Router = Router();
 // Route pour la génération de PDF à partir de code LaTeX
 router.post(
   "/",
+  apiKeyValidator(), // Vérification de la clé API
   setupUploadMiddleware(), // Gestion des uploads de fichiers
   cleanupMiddleware(), // S'assurer du nettoyage à la fin
   validateLatexContent, // Validation du contenu LaTeX
