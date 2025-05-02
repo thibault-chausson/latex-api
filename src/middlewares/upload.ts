@@ -4,7 +4,7 @@ import path from "node:path";
 import type { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
-import { hasAllowedExtension, sanitizeFilename } from "../utils/security";
+import { checkSanitizeFilename, hasAllowedExtension } from "../utils/security";
 
 // Interface pour étendre l'objet Request avec nos propriétés
 declare global {
@@ -37,17 +37,25 @@ export const setupUploadMiddleware = () => {
           cb(null, tempDir);
         },
         filename: (req, file, cb) => {
-          const sanitizedName = sanitizeFilename(file.originalname);
+          try {
+            // Utilise la nouvelle logique de sanitizeFilename qui peut lancer des erreurs
+            const sanitizedName = checkSanitizeFilename(file.originalname);
 
-          if (!hasAllowedExtension(sanitizedName)) {
-            return cb(
-              new Error(
-                `Extension de fichier non autorisée: ${path.extname(sanitizedName)}`,
-              ),
-              "",
-            );
+            // Vérifie l'extension après sanitization
+            if (!hasAllowedExtension(sanitizedName)) {
+              return cb(
+                new Error(
+                  `Extension de fichier non autorisée: ${path.extname(sanitizedName)}`,
+                ),
+                "",
+              );
+            }
+
+            cb(null, sanitizedName);
+          } catch (error) {
+            // Capture les erreurs lancées par sanitizeFilename
+            cb(error instanceof Error ? error : new Error(String(error)), "");
           }
-          cb(null, sanitizedName);
         },
       });
 
@@ -57,14 +65,24 @@ export const setupUploadMiddleware = () => {
         file: Express.Multer.File,
         cb: multer.FileFilterCallback,
       ) => {
-        if (!hasAllowedExtension(file.originalname)) {
-          return cb(
-            new Error(
-              `Extension de fichier non autorisée: ${path.extname(file.originalname)}`,
-            ),
-          );
+        try {
+          // Vérifie d'abord si le nom de fichier est valide
+          checkSanitizeFilename(file.originalname);
+
+          // Puis vérifie l'extension
+          if (!hasAllowedExtension(file.originalname)) {
+            return cb(
+              new Error(
+                `Extension de fichier non autorisée: ${path.extname(file.originalname)}`,
+              ),
+            );
+          }
+
+          cb(null, true);
+        } catch (error) {
+          // Capture les erreurs de sanitizeFilename
+          cb(error instanceof Error ? error : new Error(String(error)));
         }
-        cb(null, true);
       };
 
       // Création de l'uploader
@@ -94,11 +112,10 @@ export const setupUploadMiddleware = () => {
 
           if (err) {
             console.warn("Erreur lors de l'upload:", err);
-            if (err.message?.includes("Extension de fichier non autorisée")) {
-              res.status(400).json({ error: err.message });
-              resolve();
-              return;
-            }
+            // Envoie une réponse d'erreur pour tout type d'erreur
+            res.status(400).json({ error: err.message });
+            resolve();
+            return;
           }
           resolve();
         });

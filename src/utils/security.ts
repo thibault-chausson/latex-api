@@ -2,21 +2,38 @@ import path from "node:path";
 
 import { ALLOWED_EXTENSIONS, BLACKLISTED_COMMANDS } from "../config/const";
 
-// Fonction de nettoyage des noms de fichiers pour éviter les attaques de traversée de répertoire
-export function sanitizeFilename(filename: string): string {
-  // Supprime les caractères spéciaux et les chemins
-  const sanitized = path
-    .basename(filename)
-    .replace(/[^\w\s.-]/g, "_") // Remplace les caractères non alphanumériques par des underscores
-    .replace(/\.{2,}/g, "."); // Empêche les séquences de points multiples (comme '..')
+// Fonction de validation des noms de fichiers pour rejeter les fichiers non conformes
+export function checkSanitizeFilename(filename: string): string {
+  // Extrait juste le nom du fichier sans le chemin
+  const baseFilename = path.basename(filename);
 
-  // Vérifie que le fichier a toujours une extension après le nettoyage
-  const parts = sanitized.split(".");
-  if (parts.length < 2) {
-    return `${sanitized}.txt`; // Ajoute une extension par défaut si nécessaire
+  // Vérifie si le nom original a été modifié par path.basename()
+  // ce qui indiquerait une tentative de traversée de répertoire
+  if (baseFilename !== filename) {
+    throw new Error(
+      "Nom de fichier non autorisé : tentative de traversée de répertoire détectée",
+    );
   }
 
-  return sanitized;
+  // Vérifie les caractères spéciaux
+  if (/[^\w\s.-]/g.test(baseFilename)) {
+    throw new Error("Nom de fichier non autorisé : caractères spéciaux détectés");
+  }
+
+  // Vérifie les séquences de points multiples
+  if (/\.{2,}/g.test(baseFilename)) {
+    throw new Error(
+      "Nom de fichier non autorisé : séquences de points multiples détectées",
+    );
+  }
+
+  // Vérifie que le fichier a une extension
+  const parts = baseFilename.split(".");
+  if (parts.length < 2 || parts[parts.length - 1] === "") {
+    throw new Error("Nom de fichier non autorisé : extension manquante ou invalide");
+  }
+
+  return baseFilename;
 }
 
 // Fonction pour vérifier l'extension d'un fichier
